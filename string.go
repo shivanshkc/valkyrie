@@ -1,27 +1,9 @@
 package valkyrie
 
-type StringValidator func(arg string) error
-
-type String struct {
-	Rules []StringValidator
-}
-
-func (s *String) Validate(arg interface{}, customErr error) error {
-	value, ok := arg.(string)
+func IsString(arg interface{}) error {
+	_, ok := arg.(string)
 	if !ok {
-		return orErr(customErr, errShouldBeString)
+		return errShouldBeString
 	}
-
-	for _, validator := range s.Rules {
-		if validator == nil {
-			continue
-		}
-		err := validator(value)
-		if err == nil {
-			continue
-		}
-		return orErr(customErr, err)
-	}
-
 	return nil
 }
