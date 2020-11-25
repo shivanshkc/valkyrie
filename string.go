@@ -16,6 +16,16 @@ func String(customErr error) *StringRule {
 	}
 }
 
+func (sr *StringRule) NonEmpty() *StringRule {
+	sr.checks = append(sr.checks, func(s string) error {
+		if len(s) == 0 {
+			return errStringNonEmpty()
+		}
+		return nil
+	})
+	return sr
+}
+
 func (sr *StringRule) MaxLength(length int) *StringRule {
 	sr.checks = append(sr.checks, func(s string) error {
 		if len(s) > length {
