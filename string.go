@@ -46,7 +46,7 @@ func (sr *StringRule) MinLength(length int) *StringRule {
 	return sr
 }
 
-func (sr *StringRule) Regex(pattern regexp.Regexp) *StringRule {
+func (sr *StringRule) Regex(pattern *regexp.Regexp) *StringRule {
 	sr.checks = append(sr.checks, func(s string) error {
 		matches := pattern.MatchString(s)
 		if !matches {

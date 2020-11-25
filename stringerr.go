@@ -21,6 +21,6 @@ var errStringMinLength = func(length int) error {
 	return fmt.Errorf("string length should not be less than %d", length)
 }
 
-var errStringPattern = func(pattern regexp.Regexp) error {
+var errStringPattern = func(pattern *regexp.Regexp) error {
 	return fmt.Errorf("string should satisfy regex: %s", pattern.String())
 }
