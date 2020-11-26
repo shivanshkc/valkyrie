@@ -1,12 +1,15 @@
 package valkyrie
 
+// MapCheck : Represents a function that performs a validation check on a map.
 type MapCheck func(map[string]interface{}) error
 
+// MapRule : A Collection of MapChecks, hence acts as a customizable Rule for a map.
 type MapRule struct {
 	checks    []MapCheck
 	customErr error
 }
 
+// Map : An intuitive function to instantiate a MapRule.
 func Map(customErr error) *MapRule {
 	return &MapRule{
 		checks:    []MapCheck{},
@@ -14,6 +17,7 @@ func Map(customErr error) *MapRule {
 	}
 }
 
+// Key : Adds a MapCheck to the MapRule for the specified key.
 func (mr *MapRule) Key(name string, required bool, rule Rule) *MapRule {
 	check := func(m map[string]interface{}) error {
 		value, exists := m[name]
@@ -34,6 +38,7 @@ func (mr *MapRule) Key(name string, required bool, rule Rule) *MapRule {
 	return mr
 }
 
+// Apply : Applies all the checks in the MapRule on the provided args.
 func (mr *MapRule) Apply(arg interface{}) error {
 	mapValue, ok := arg.(map[string]interface{})
 	if !ok {
