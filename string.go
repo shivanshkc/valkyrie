@@ -12,6 +12,7 @@ type StringCheck func(string) error
 type StringRule struct {
 	checks    []StringCheck
 	customErr error
+	whitelist []string
 }
 
 // String : An intuitive function to instantiate a StringRule.
@@ -19,7 +20,14 @@ func String(customErr error) *StringRule {
 	return &StringRule{
 		checks:    []StringCheck{},
 		customErr: customErr,
+		whitelist: []string{},
 	}
+}
+
+// Allow : Whitelists some values.
+func (sr *StringRule) Allow(values ...string) *StringRule {
+	sr.whitelist = append(sr.whitelist, values...)
+	return sr
 }
 
 // NonEmpty : Disallows strings of length 0.
@@ -145,9 +153,18 @@ func (sr *StringRule) Apply(arg interface{}) error {
 			continue
 		}
 		err := check(str)
-		if err != nil {
+		if err != nil && !sr.isWhitelisted(str) {
 			return orErr(sr.customErr, err)
 		}
 	}
 	return nil
+}
+
+func (sr *StringRule) isWhitelisted(value string) bool {
+	for _, white := range sr.whitelist {
+		if white == value {
+			return true
+		}
+	}
+	return false
 }
