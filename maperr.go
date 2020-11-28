@@ -7,5 +7,5 @@ var errShouldBeMap = func() error {
 }
 
 var errRequiredKeyMissing = func(keyName string) error {
-	return fmt.Errorf("required key %s missing", keyName)
+	return fmt.Errorf("required key '%s' missing", keyName)
 }
