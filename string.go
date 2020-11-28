@@ -1,6 +1,9 @@
 package valkyrie
 
-import "regexp"
+import (
+	"regexp"
+	"strconv"
+)
 
 // StringCheck : Represents a function that performs a validation check on a string.
 type StringCheck func(string) error
@@ -71,6 +74,42 @@ func (sr *StringRule) Regex(pattern *regexp.Regexp) *StringRule {
 			return errStringPattern(pattern)
 		}
 		return nil
+	})
+	return sr
+}
+
+// Bool : Allows strings that are parse-able to bool. Example: "true", "false"
+func (sr *StringRule) Bool() *StringRule {
+	sr.checks = append(sr.checks, func(s string) error {
+		_, err := strconv.ParseBool(s)
+		if err != nil {
+			return errStringBool()
+		}
+		return err
+	})
+	return sr
+}
+
+// Int : Allows strings that are parse-able to int.
+func (sr *StringRule) Int() *StringRule {
+	sr.checks = append(sr.checks, func(s string) error {
+		_, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return errStringInt()
+		}
+		return err
+	})
+	return sr
+}
+
+// Float : Allows strings that are parse-able to float.
+func (sr *StringRule) Float() *StringRule {
+	sr.checks = append(sr.checks, func(s string) error {
+		_, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return errStringFloat()
+		}
+		return err
 	})
 	return sr
 }

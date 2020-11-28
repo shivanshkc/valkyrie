@@ -28,3 +28,15 @@ var errStringShouldBeUUIDv4 = func() error {
 var errStringPattern = func(pattern *regexp.Regexp) error {
 	return fmt.Errorf("string should satisfy regex: %s", pattern.String())
 }
+
+var errStringBool = func() error {
+	return fmt.Errorf("string should be parse-able to bool")
+}
+
+var errStringInt = func() error {
+	return fmt.Errorf("string should be parse-able to int")
+}
+
+var errStringFloat = func() error {
+	return fmt.Errorf("string should be parse-able to float")
+}
