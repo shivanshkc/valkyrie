@@ -40,3 +40,7 @@ var errStringInt = func() error {
 var errStringFloat = func() error {
 	return fmt.Errorf("string should be parse-able to float")
 }
+
+var errStringOneOf = func(values []string) error {
+	return fmt.Errorf("string should be one of %v", values)
+}

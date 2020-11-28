@@ -85,7 +85,7 @@ func (sr *StringRule) Bool() *StringRule {
 		if err != nil {
 			return errStringBool()
 		}
-		return err
+		return nil
 	})
 	return sr
 }
@@ -97,7 +97,7 @@ func (sr *StringRule) Int() *StringRule {
 		if err != nil {
 			return errStringInt()
 		}
-		return err
+		return nil
 	})
 	return sr
 }
@@ -109,7 +109,20 @@ func (sr *StringRule) Float() *StringRule {
 		if err != nil {
 			return errStringFloat()
 		}
-		return err
+		return nil
+	})
+	return sr
+}
+
+// OneOf : Allows only the provided values in the string.
+func (sr *StringRule) OneOf(values ...string) *StringRule {
+	sr.checks = append(sr.checks, func(s string) error {
+		for _, value := range values {
+			if value == s {
+				return nil
+			}
+		}
+		return errStringOneOf(values)
 	})
 	return sr
 }
