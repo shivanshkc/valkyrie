@@ -140,3 +140,14 @@ func (i *IntRule) LT(value int64) *IntRule {
 	})
 	return i
 }
+
+// Except : Invalidates if arg == provided value
+func (i *IntRule) Except(value int64) *IntRule {
+	i.AddCheck(func(arg int64) error {
+		if arg == value {
+			return errIntExcept(value)
+		}
+		return nil
+	})
+	return i
+}

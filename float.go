@@ -140,3 +140,14 @@ func (f *FloatRule) LT(value float64) *FloatRule {
 	})
 	return f
 }
+
+// Except : Invalidates if arg == provided value
+func (f *FloatRule) Except(value float64) *FloatRule {
+	f.AddCheck(func(arg float64) error {
+		if arg == value {
+			return errFloatExcept(value)
+		}
+		return nil
+	})
+	return f
+}

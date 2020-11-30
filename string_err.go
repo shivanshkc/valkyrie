@@ -10,4 +10,5 @@ var (
 	errStringLenLT   = func(value int64) error { return fmt.Errorf("value should follow: type: string && length < %d", value) }
 	errStringPattern = func(value string) error { return fmt.Errorf("value should follow: type string && pattern: %s", value) }
 	errStringUUIDv4  = func() error { return fmt.Errorf("value should follow: type string && valid UUIDv4") }
+	errStringExcept  = func(value string) error { return fmt.Errorf("value should follow: type string && != %s", value) }
 )
