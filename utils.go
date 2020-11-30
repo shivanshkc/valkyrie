@@ -68,3 +68,16 @@ func toInt64(arg interface{}, dataType string) (int64, error) {
 		return 0, errEmpty
 	}
 }
+
+func toBool(arg interface{}, dataType string) (bool, error) {
+	switch dataType {
+	case boolType:
+		boolVal, ok := arg.(bool)
+		if !ok {
+			return false, errEmpty
+		}
+		return boolVal, nil
+	default:
+		return false, errEmpty
+	}
+}

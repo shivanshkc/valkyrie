@@ -37,15 +37,15 @@ func (i *IntRule) WithError(err error) *IntRule {
 
 // Apply : Applies the rule on a given argument.
 func (i *IntRule) Apply(arg interface{}) error {
-	str, err := toInt64(arg, i.from)
+	intVal, err := toInt64(arg, i.from)
 	if err != nil {
 		return orErr(i.err, errInt64(i.from))
 	}
-	if i.isWhitelisted(str) {
+	if i.isWhitelisted(intVal) {
 		return nil
 	}
 
-	if err := i.performChecks(str); err != nil {
+	if err := i.performChecks(intVal); err != nil {
 		return orErr(i.err, err)
 	}
 	return nil
