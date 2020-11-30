@@ -8,17 +8,17 @@ type StringCheck func(arg string) error
 // StringRule : Rule interface implementation for a string.
 type StringRule struct {
 	from   string
-	whites []string
+	whites []interface{}
 	checks []StringCheck
 	err    error
 }
 
 // StringRule PRIMARY PUBLIC METHODS ################################
 
-// Allow : Whitelists the provided strings for a rule.
+// Allow : Whitelists the provided values for a rule.
 // If the argument is one of the whitelisted values, no checks
 // will be performed upon it.
-func (s *StringRule) Allow(args ...string) *StringRule {
+func (s *StringRule) Allow(args ...interface{}) *StringRule {
 	s.whites = append(s.whites, args...)
 	return s
 }
@@ -39,12 +39,12 @@ func (s *StringRule) WithError(err error) *StringRule {
 
 // Apply : Applies the rule on a given argument.
 func (s *StringRule) Apply(arg interface{}) error {
+	if s.isWhitelisted(arg) {
+		return nil
+	}
 	str, err := toString(arg, s.from)
 	if err != nil {
 		return orErr(s.err, errString(s.from))
-	}
-	if s.isWhitelisted(str) {
-		return nil
 	}
 
 	if err := s.performChecks(str); err != nil {
@@ -83,7 +83,7 @@ func PureString() *StringRule {
 
 // StringRule PRIVATE METHODS #######################################
 
-func (s *StringRule) isWhitelisted(value string) bool {
+func (s *StringRule) isWhitelisted(value interface{}) bool {
 	for _, white := range s.whites {
 		if white == value {
 			return true
