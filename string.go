@@ -161,3 +161,15 @@ func (s *StringRule) Pattern(reg *regexp.Regexp) *StringRule {
 	})
 	return s
 }
+
+// UUIDv4 : Adds a UUIDv4 check on the string.
+func (s *StringRule) UUIDv4() *StringRule {
+	s.AddCheck(func(arg string) error {
+		matches := regexp.MustCompile(uuidRegex).MatchString(arg)
+		if !matches {
+			return errStringUUIDv4()
+		}
+		return nil
+	})
+	return s
+}
