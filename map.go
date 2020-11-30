@@ -60,3 +60,18 @@ func (m *MapRule) performChecks(arg map[string]interface{}) error {
 }
 
 // MapRule UTILITY PUBLIC METHODS  ##################################
+
+// Key : Adds a check to a specific key in the map.
+func (m *MapRule) Key(keyName string, required bool, rule Rule) *MapRule {
+	m.AddCheck(func(m map[string]interface{}) error {
+		value, exists := m[keyName]
+		if !exists && required {
+			return errMapKeyMissing(keyName)
+		}
+		if !exists {
+			return nil
+		}
+		return rule.Apply(value)
+	})
+	return m
+}
