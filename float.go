@@ -96,3 +96,47 @@ func (f *FloatRule) performChecks(arg float64) error {
 }
 
 // FloatRule UTILITY PUBLIC METHODS  ################################
+
+// GTE : Adds a '>=' check to the rule.
+func (f *FloatRule) GTE(value float64) *FloatRule {
+	f.AddCheck(func(arg float64) error {
+		if arg < value {
+			return errFloatGTE(value)
+		}
+		return nil
+	})
+	return f
+}
+
+// LTE : Adds a '<=' check to the rule.
+func (f *FloatRule) LTE(value float64) *FloatRule {
+	f.AddCheck(func(arg float64) error {
+		if arg > value {
+			return errFloatLTE(value)
+		}
+		return nil
+	})
+	return f
+}
+
+// GT : Adds a '>' check to the rule.
+func (f *FloatRule) GT(value float64) *FloatRule {
+	f.AddCheck(func(arg float64) error {
+		if arg <= value {
+			return errFloatGT(value)
+		}
+		return nil
+	})
+	return f
+}
+
+// LT : Adds a '<' check to the rule.
+func (f *FloatRule) LT(value float64) *FloatRule {
+	f.AddCheck(func(arg float64) error {
+		if arg >= value {
+			return errFloatLT(value)
+		}
+		return nil
+	})
+	return f
+}
