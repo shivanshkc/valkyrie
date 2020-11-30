@@ -173,3 +173,11 @@ func (s *StringRule) UUIDv4() *StringRule {
 	})
 	return s
 }
+
+// Blind : Invalidates everything except the whitelisted (allowed) values.
+func (s *StringRule) Blind() *StringRule {
+	s.AddCheck(func(arg string) error {
+		return errBlind
+	})
+	return s
+}

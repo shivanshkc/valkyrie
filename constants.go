@@ -1,6 +1,8 @@
 package valkyrie
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	boolType   string = "bool"
@@ -13,4 +15,5 @@ const (
 
 var (
 	errEmpty = errors.New("")
+	errBlind = errors.New("blind validation")
 )
