@@ -96,3 +96,47 @@ func (i *IntRule) performChecks(arg int64) error {
 }
 
 // IntRule UTILITY PUBLIC METHODS  ##################################
+
+// GTE : Adds a '>=' check to the rule.
+func (i *IntRule) GTE(value int64) *IntRule {
+	i.AddCheck(func(arg int64) error {
+		if arg < value {
+			return errIntGTE(value)
+		}
+		return nil
+	})
+	return i
+}
+
+// LTE : Adds a '<=' check to the rule.
+func (i *IntRule) LTE(value int64) *IntRule {
+	i.AddCheck(func(arg int64) error {
+		if arg > value {
+			return errIntLTE(value)
+		}
+		return nil
+	})
+	return i
+}
+
+// GT : Adds a '>' check to the rule.
+func (i *IntRule) GT(value int64) *IntRule {
+	i.AddCheck(func(arg int64) error {
+		if arg <= value {
+			return errIntGT(value)
+		}
+		return nil
+	})
+	return i
+}
+
+// LT : Adds a '<' check to the rule.
+func (i *IntRule) LT(value int64) *IntRule {
+	i.AddCheck(func(arg int64) error {
+		if arg >= value {
+			return errIntLT(value)
+		}
+		return nil
+	})
+	return i
+}
