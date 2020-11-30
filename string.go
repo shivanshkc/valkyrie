@@ -11,7 +11,7 @@ type StringRule struct {
 	err    error
 }
 
-// Basic Rule Modifiers #############################################
+// StringRule PRIMARY PUBLIC METHODS ################################
 
 // Allow : Whitelists the provided strings for a rule.
 // If the argument is one of the whitelisted values, no checks
@@ -51,7 +51,7 @@ func (s *StringRule) Apply(arg interface{}) error {
 	return nil
 }
 
-// Constructors for StringRule ######################################
+// StringRule CONSTRUCTORS ##########################################
 
 // BoolString : Creates a StringRule which expects the arg to be bool.
 // which will be validated after conversion to string.
@@ -79,7 +79,7 @@ func PureString() *StringRule {
 	return &StringRule{from: stringType}
 }
 
-// Private method of StringRule #####################################
+// StringRule PRIVATE METHODS #######################################
 
 func (s *StringRule) isWhitelisted(value string) bool {
 	for _, white := range s.whites {
@@ -102,4 +102,4 @@ func (s *StringRule) performChecks(arg string) error {
 	return nil
 }
 
-// Utility checks for StringRule ####################################
+// StringRule UTILITY PUBLIC METHODS  ###############################
