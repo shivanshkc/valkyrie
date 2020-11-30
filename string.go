@@ -1,5 +1,7 @@
 package valkyrie
 
+import "regexp"
+
 // StringCheck : Represents a function that performs a validation check on a string.
 type StringCheck func(arg string) error
 
@@ -103,3 +105,59 @@ func (s *StringRule) performChecks(arg string) error {
 }
 
 // StringRule UTILITY PUBLIC METHODS  ###############################
+
+// LenGTE : Adds a '>=' check on the string length.
+func (s *StringRule) LenGTE(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) < int(value) {
+			return errStringLenGTE(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// LenLTE : Adds a '<=' check on the string length.
+func (s *StringRule) LenLTE(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) > int(value) {
+			return errStringLenLTE(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// LenGT : Adds a '>' check on the string length.
+func (s *StringRule) LenGT(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) <= int(value) {
+			return errStringLenGT(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// LenLT : Adds a '<' check on the string length.
+func (s *StringRule) LenLT(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) >= int(value) {
+			return errStringLenLT(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// Pattern : Adds a regex check to the string.
+func (s *StringRule) Pattern(reg *regexp.Regexp) *StringRule {
+	s.AddCheck(func(arg string) error {
+		matches := reg.MatchString(arg)
+		if !matches {
+			return errStringPattern(reg.String())
+		}
+		return nil
+	})
+	return s
+}
