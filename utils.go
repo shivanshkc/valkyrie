@@ -39,3 +39,32 @@ func toString(arg interface{}, dataType string) (string, error) {
 		return "", errEmpty
 	}
 }
+
+func toInt64(arg interface{}, dataType string) (int64, error) {
+	switch dataType {
+	case intType:
+		intVal, ok := arg.(int64)
+		if !ok {
+			return 0, errEmpty
+		}
+		return intVal, nil
+	case floatType:
+		floatVal, ok := arg.(float64)
+		if !ok {
+			return 0, errEmpty
+		}
+		return int64(floatVal), nil
+	case stringType:
+		str, ok := arg.(string)
+		if !ok {
+			return 0, errEmpty
+		}
+		intVal, err := strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			return 0, errEmpty
+		}
+		return intVal, nil
+	default:
+		return 0, errEmpty
+	}
+}
