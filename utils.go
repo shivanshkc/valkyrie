@@ -9,34 +9,16 @@ func orErr(err1 error, err2 error) error {
 	return err2
 }
 
-func toString(arg interface{}, dataType string) (string, error) {
+func toBool(arg interface{}, dataType string) (bool, error) {
 	switch dataType {
 	case boolType:
 		boolVal, ok := arg.(bool)
 		if !ok {
-			return "", errEmpty
+			return false, errEmpty
 		}
-		return strconv.FormatBool(boolVal), nil
-	case intType:
-		intVal, ok := arg.(int64)
-		if !ok {
-			return "", errEmpty
-		}
-		return strconv.FormatInt(intVal, 10), nil
-	case floatType:
-		floatVal, ok := arg.(float64)
-		if !ok {
-			return "", errEmpty
-		}
-		return strconv.FormatFloat(floatVal, 'f', -1, 64), nil
-	case stringType:
-		str, ok := arg.(string)
-		if !ok {
-			return "", errEmpty
-		}
-		return str, nil
+		return boolVal, nil
 	default:
-		return "", errEmpty
+		return false, errEmpty
 	}
 }
 
@@ -69,15 +51,62 @@ func toInt64(arg interface{}, dataType string) (int64, error) {
 	}
 }
 
-func toBool(arg interface{}, dataType string) (bool, error) {
+func toFloat64(arg interface{}, dataType string) (float64, error) {
+	switch dataType {
+	case intType:
+		intVal, ok := arg.(int64)
+		if !ok {
+			return 0, errEmpty
+		}
+		return float64(intVal), nil
+	case floatType:
+		floatVal, ok := arg.(float64)
+		if !ok {
+			return 0, errEmpty
+		}
+		return floatVal, nil
+	case stringType:
+		str, ok := arg.(string)
+		if !ok {
+			return 0, errEmpty
+		}
+		floatVal, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0, errEmpty
+		}
+		return floatVal, nil
+	default:
+		return 0, errEmpty
+	}
+}
+
+func toString(arg interface{}, dataType string) (string, error) {
 	switch dataType {
 	case boolType:
 		boolVal, ok := arg.(bool)
 		if !ok {
-			return false, errEmpty
+			return "", errEmpty
 		}
-		return boolVal, nil
+		return strconv.FormatBool(boolVal), nil
+	case intType:
+		intVal, ok := arg.(int64)
+		if !ok {
+			return "", errEmpty
+		}
+		return strconv.FormatInt(intVal, 10), nil
+	case floatType:
+		floatVal, ok := arg.(float64)
+		if !ok {
+			return "", errEmpty
+		}
+		return strconv.FormatFloat(floatVal, 'f', -1, 64), nil
+	case stringType:
+		str, ok := arg.(string)
+		if !ok {
+			return "", errEmpty
+		}
+		return str, nil
 	default:
-		return false, errEmpty
+		return "", errEmpty
 	}
 }
