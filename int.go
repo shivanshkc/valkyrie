@@ -6,17 +6,17 @@ type IntCheck func(arg int64) error
 // IntRule : Rule interface implementation for an int64.
 type IntRule struct {
 	from   string
-	whites []int64
+	whites []interface{}
 	checks []IntCheck
 	err    error
 }
 
 // IntRule PRIMARY PUBLIC METHODS ###################################
 
-// Allow : Whitelists the provided int(s) for a rule.
+// Allow : Whitelists the provided values for a rule.
 // If the argument is one of the whitelisted values, no checks
 // will be performed upon it.
-func (i *IntRule) Allow(args ...int64) *IntRule {
+func (i *IntRule) Allow(args ...interface{}) *IntRule {
 	i.whites = append(i.whites, args...)
 	return i
 }
@@ -37,12 +37,12 @@ func (i *IntRule) WithError(err error) *IntRule {
 
 // Apply : Applies the rule on a given argument.
 func (i *IntRule) Apply(arg interface{}) error {
+	if i.isWhitelisted(arg) {
+		return nil
+	}
 	intVal, err := toInt64(arg, i.from)
 	if err != nil {
 		return orErr(i.err, errInt64(i.from))
-	}
-	if i.isWhitelisted(intVal) {
-		return nil
 	}
 
 	if err := i.performChecks(intVal); err != nil {
@@ -74,7 +74,7 @@ func PureInt() *IntRule {
 
 // IntRule PRIVATE METHODS ##########################################
 
-func (i *IntRule) isWhitelisted(value int64) bool {
+func (i *IntRule) isWhitelisted(value interface{}) bool {
 	for _, white := range i.whites {
 		if white == value {
 			return true

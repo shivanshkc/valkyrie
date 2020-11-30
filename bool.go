@@ -6,17 +6,17 @@ type BoolCheck func(arg bool) error
 // BoolRule : Rule interface implementation for a bool.
 type BoolRule struct {
 	from   string
-	whites []bool
+	whites []interface{}
 	checks []BoolCheck
 	err    error
 }
 
 // BoolRule PRIMARY PUBLIC METHODS ##################################
 
-// Allow : Whitelists the provided bool(s) for a rule.
+// Allow : Whitelists the provided values for a rule.
 // If the argument is one of the whitelisted values, no checks
 // will be performed upon it.
-func (b *BoolRule) Allow(args ...bool) *BoolRule {
+func (b *BoolRule) Allow(args ...interface{}) *BoolRule {
 	b.whites = append(b.whites, args...)
 	return b
 }
@@ -37,12 +37,12 @@ func (b *BoolRule) WithError(err error) *BoolRule {
 
 // Apply : Applies the rule on a given argument.
 func (b *BoolRule) Apply(arg interface{}) error {
+	if b.isWhitelisted(arg) {
+		return nil
+	}
 	boolVal, err := toBool(arg, b.from)
 	if err != nil {
 		return orErr(b.err, errBool(b.from))
-	}
-	if b.isWhitelisted(boolVal) {
-		return nil
 	}
 
 	if err := b.performChecks(boolVal); err != nil {
@@ -60,7 +60,7 @@ func PureBool() *BoolRule {
 
 // BoolRule PRIVATE METHODS #########################################
 
-func (b *BoolRule) isWhitelisted(value bool) bool {
+func (b *BoolRule) isWhitelisted(value interface{}) bool {
 	for _, white := range b.whites {
 		if white == value {
 			return true

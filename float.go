@@ -6,17 +6,17 @@ type FloatCheck func(arg float64) error
 // FloatRule : Rule interface implementation for a float64.
 type FloatRule struct {
 	from   string
-	whites []float64
+	whites []interface{}
 	checks []FloatCheck
 	err    error
 }
 
 // FloatRule PRIMARY PUBLIC METHODS #################################
 
-// Allow : Whitelists the provided float(s) for a rule.
+// Allow : Whitelists the provided values for a rule.
 // If the argument is one of the whitelisted values, no checks
 // will be performed upon it.
-func (f *FloatRule) Allow(args ...float64) *FloatRule {
+func (f *FloatRule) Allow(args ...interface{}) *FloatRule {
 	f.whites = append(f.whites, args...)
 	return f
 }
@@ -37,12 +37,12 @@ func (f *FloatRule) WithError(err error) *FloatRule {
 
 // Apply : Applies the rule on a given argument.
 func (f *FloatRule) Apply(arg interface{}) error {
+	if f.isWhitelisted(arg) {
+		return nil
+	}
 	floatVal, err := toFloat64(arg, f.from)
 	if err != nil {
 		return orErr(f.err, errFloat64(f.from))
-	}
-	if f.isWhitelisted(floatVal) {
-		return nil
 	}
 
 	if err := f.performChecks(floatVal); err != nil {
@@ -74,7 +74,7 @@ func PureFloat() *FloatRule {
 
 // FloatRule PRIVATE METHODS ########################################
 
-func (f *FloatRule) isWhitelisted(value float64) bool {
+func (f *FloatRule) isWhitelisted(value interface{}) bool {
 	for _, white := range f.whites {
 		if white == value {
 			return true
