@@ -1,57 +1,77 @@
 package valkyrie
 
-// MapCheck : Represents a function that performs a validation check on a map.
+// MapCheck : Represents a function that performs a validation check on a map[string]interface{}.
 type MapCheck func(map[string]interface{}) error
 
-// MapRule : A Collection of MapChecks, hence acts as a customizable Rule for a map.
+// MapRule : Rule interface implementation for a map[string]interface{}.
 type MapRule struct {
-	checks    []MapCheck
-	customErr error
+	checks []MapCheck
+	err    error
 }
 
-// Map : An intuitive function to instantiate a MapRule.
-func Map(customErr error) *MapRule {
-	return &MapRule{
-		checks:    []MapCheck{},
-		customErr: customErr,
+// MapRule PRIMARY PUBLIC METHODS ###################################
+
+// AddCheck : Adds a custom check function to the rule.
+func (m *MapRule) AddCheck(check MapCheck) *MapRule {
+	m.checks = append(m.checks, check)
+	return m
+}
+
+// WithError : Adds a custom error to the rule.
+// This custom error (if not nil) will be thrown on every check violation
+// instead of the original error.
+func (m *MapRule) WithError(err error) *MapRule {
+	m.err = err
+	return m
+}
+
+// Apply : Applies the rule on a given argument.
+func (m *MapRule) Apply(arg interface{}) error {
+	mapVal, ok := arg.(map[string]interface{})
+	if !ok {
+		return orErr(m.err, errMap())
 	}
+
+	if err := m.performChecks(mapVal); err != nil {
+		return orErr(m.err, err)
+	}
+	return nil
 }
 
-// Key : Adds a MapCheck to the MapRule for the specified key.
-func (mr *MapRule) Key(name string, required bool, rule Rule) *MapRule {
-	check := func(m map[string]interface{}) error {
-		value, exists := m[name]
+// MapRule CONSTRUCTORS #############################################
+
+// PureMap : Creates an MapRule which expects the arg to be a map[string]interface{}.
+func PureMap() *MapRule {
+	return &MapRule{}
+}
+
+// MapRule PRIVATE METHODS ##########################################
+
+func (m *MapRule) performChecks(arg map[string]interface{}) error {
+	for _, check := range m.checks {
+		if check == nil {
+			continue
+		}
+		if err := check(arg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// MapRule UTILITY PUBLIC METHODS  ##################################
+
+// Key : Adds a check to a specific key in the map.
+func (m *MapRule) Key(keyName string, required bool, rule Rule) *MapRule {
+	m.AddCheck(func(m map[string]interface{}) error {
+		value, exists := m[keyName]
 		if !exists && required {
-			return errRequiredKeyMissing(name)
+			return errMapKeyMissing(keyName)
 		}
 		if !exists {
 			return nil
 		}
-
-		if err := rule.Apply(value); err != nil {
-			return err
-		}
-		return nil
-	}
-
-	mr.checks = append(mr.checks, check)
-	return mr
-}
-
-// Apply : Applies all the checks in the MapRule on the provided args.
-func (mr *MapRule) Apply(arg interface{}) error {
-	mapValue, ok := arg.(map[string]interface{})
-	if !ok {
-		return orErr(mr.customErr, errShouldBeMap())
-	}
-
-	for _, check := range mr.checks {
-		if check == nil {
-			continue
-		}
-		if err := check(mapValue); err != nil {
-			return orErr(mr.customErr, err)
-		}
-	}
-	return nil
+		return rule.Apply(value)
+	})
+	return m
 }

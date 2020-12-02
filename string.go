@@ -3,99 +3,192 @@ package valkyrie
 import "regexp"
 
 // StringCheck : Represents a function that performs a validation check on a string.
-type StringCheck func(string) error
+type StringCheck func(arg string) error
 
-// StringRule : A Collection of StringChecks, hence acts as a customizable Rule for a string.
+// StringRule : Rule interface implementation for a string.
 type StringRule struct {
-	checks    []StringCheck
-	customErr error
+	from   string
+	whites []interface{}
+	checks []StringCheck
+	err    error
 }
 
-// String : An intuitive function to instantiate a StringRule.
-func String(customErr error) *StringRule {
-	return &StringRule{
-		checks:    []StringCheck{},
-		customErr: customErr,
+// StringRule PRIMARY PUBLIC METHODS ################################
+
+// Allow : Whitelists the provided values for a rule.
+// If the argument is one of the whitelisted values, no checks
+// will be performed upon it.
+func (s *StringRule) Allow(args ...interface{}) *StringRule {
+	s.whites = append(s.whites, args...)
+	return s
+}
+
+// AddCheck : Adds a custom check function to the rule.
+func (s *StringRule) AddCheck(check StringCheck) *StringRule {
+	s.checks = append(s.checks, check)
+	return s
+}
+
+// WithError : Adds a custom error to the rule.
+// This custom error (if not nil) will be thrown on every check violation
+// instead of the original error.
+func (s *StringRule) WithError(err error) *StringRule {
+	s.err = err
+	return s
+}
+
+// Apply : Applies the rule on a given argument.
+func (s *StringRule) Apply(arg interface{}) error {
+	if s.isWhitelisted(arg) {
+		return nil
 	}
-}
-
-// NonEmpty : Disallows strings of length 0.
-func (sr *StringRule) NonEmpty() *StringRule {
-	sr.checks = append(sr.checks, func(s string) error {
-		if len(s) == 0 {
-			return errStringNonEmpty()
-		}
-		return nil
-	})
-	return sr
-}
-
-// MaxLength : Disallows strings with length greater than the provided length.
-func (sr *StringRule) MaxLength(length int) *StringRule {
-	sr.checks = append(sr.checks, func(s string) error {
-		if len(s) > length {
-			return errStringMaxLength(length)
-		}
-		return nil
-	})
-	return sr
-}
-
-// MinLength : Disallows strings with length smaller than the provided length.
-func (sr *StringRule) MinLength(length int) *StringRule {
-	sr.checks = append(sr.checks, func(s string) error {
-		if len(s) < length {
-			return errStringMinLength(length)
-		}
-		return nil
-	})
-	return sr
-}
-
-// UUIDv4 : Disallows strings that are not UUIDv4.
-func (sr *StringRule) UUIDv4() *StringRule {
-	sr.checks = append(sr.checks, func(s string) error {
-		if !regexp.MustCompile(uuidRegex).MatchString(s) {
-			return errStringShouldBeUUIDv4()
-		}
-		return nil
-	})
-	return sr
-}
-
-// Regex : Checks the given string against the provided regex.
-func (sr *StringRule) Regex(pattern *regexp.Regexp) *StringRule {
-	sr.checks = append(sr.checks, func(s string) error {
-		matches := pattern.MatchString(s)
-		if !matches {
-			return errStringPattern(pattern)
-		}
-		return nil
-	})
-	return sr
-}
-
-// Custom : Allows to add a custom StringCheck to the StringRule.
-func (sr *StringRule) Custom(check StringCheck) *StringRule {
-	sr.checks = append(sr.checks, check)
-	return sr
-}
-
-// Apply : Applies all the checks in the StringRule on the provided args.
-func (sr *StringRule) Apply(arg interface{}) error {
-	str, ok := arg.(string)
-	if !ok {
-		return orErr(sr.customErr, errShouldBeString())
+	str, err := toString(arg, s.from)
+	if err != nil {
+		return orErr(s.err, errString(s.from))
 	}
 
-	for _, check := range sr.checks {
+	if err := s.performChecks(str); err != nil {
+		return orErr(s.err, err)
+	}
+	return nil
+}
+
+// StringRule CONSTRUCTORS ##########################################
+
+// BoolString : Creates a StringRule which expects the arg to be bool.
+// which will be validated after conversion to string.
+// Example: true -> "true"
+func BoolString() *StringRule {
+	return &StringRule{from: boolType}
+}
+
+// IntString : Creates a StringRule which expects the arg to be an int64.
+// which will be validated after conversion to string.
+// Example: 23 -> "23"
+func IntString() *StringRule {
+	return &StringRule{from: intType}
+}
+
+// FloatString : Creates a StringRule which expects the arg to be a float64.
+// which will be validated after conversion to string.
+// Example: 2.34 -> "2.34"
+func FloatString() *StringRule {
+	return &StringRule{from: floatType}
+}
+
+// PureString : Creates a StringRule which expects the arg to be a string.
+func PureString() *StringRule {
+	return &StringRule{from: stringType}
+}
+
+// StringRule PRIVATE METHODS #######################################
+
+func (s *StringRule) isWhitelisted(value interface{}) bool {
+	for _, white := range s.whites {
+		if white == value {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *StringRule) performChecks(arg string) error {
+	for _, check := range s.checks {
 		if check == nil {
 			continue
 		}
-		err := check(str)
-		if err != nil {
-			return orErr(sr.customErr, err)
+		if err := check(arg); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// StringRule UTILITY PUBLIC METHODS  ###############################
+
+// LenGTE : Adds a '>=' check on the string length.
+func (s *StringRule) LenGTE(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) < int(value) {
+			return errStringLenGTE(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// LenLTE : Adds a '<=' check on the string length.
+func (s *StringRule) LenLTE(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) > int(value) {
+			return errStringLenLTE(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// LenGT : Adds a '>' check on the string length.
+func (s *StringRule) LenGT(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) <= int(value) {
+			return errStringLenGT(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// LenLT : Adds a '<' check on the string length.
+func (s *StringRule) LenLT(value int64) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if len(arg) >= int(value) {
+			return errStringLenLT(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// Pattern : Adds a regex check to the string.
+func (s *StringRule) Pattern(reg *regexp.Regexp) *StringRule {
+	s.AddCheck(func(arg string) error {
+		matches := reg.MatchString(arg)
+		if !matches {
+			return errStringPattern(reg.String())
+		}
+		return nil
+	})
+	return s
+}
+
+// UUIDv4 : Adds a UUIDv4 check on the string.
+func (s *StringRule) UUIDv4() *StringRule {
+	s.AddCheck(func(arg string) error {
+		matches := regexp.MustCompile(uuidRegex).MatchString(arg)
+		if !matches {
+			return errStringUUIDv4()
+		}
+		return nil
+	})
+	return s
+}
+
+// Except : Invalidates if arg == provided value
+func (s *StringRule) Except(value string) *StringRule {
+	s.AddCheck(func(arg string) error {
+		if arg == value {
+			return errStringExcept(value)
+		}
+		return nil
+	})
+	return s
+}
+
+// Blind : Invalidates everything except the whitelisted (allowed) values.
+func (s *StringRule) Blind() *StringRule {
+	s.AddCheck(func(arg string) error {
+		return errBlind
+	})
+	return s
 }
