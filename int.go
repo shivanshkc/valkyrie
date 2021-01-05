@@ -5,10 +5,14 @@ type IntCheck func(arg int64) error
 
 // IntRule : Rule interface implementation for an int64.
 type IntRule struct {
-	from   string
+	// base : base is the name of the type from which the int value will be inferred.
+	base string
+	// whites : the list of whitelisted values for this rule.
 	whites []interface{}
+	// checks : the list of checks to be performed as part of this rule.
 	checks []IntCheck
-	err    error
+	// err : the error to be thrown if the rule fails.
+	err error
 }
 
 // IntRule PRIMARY PUBLIC METHODS ###################################
@@ -40,9 +44,9 @@ func (i *IntRule) Apply(arg interface{}) error {
 	if i.isWhitelisted(arg) {
 		return nil
 	}
-	intVal, err := toInt64(arg, i.from)
+	intVal, err := toInt64(arg, i.base)
 	if err != nil {
-		return orErr(i.err, errInt64(i.from))
+		return orErr(i.err, errInt64(i.base))
 	}
 
 	if err := i.performChecks(intVal); err != nil {
@@ -57,19 +61,19 @@ func (i *IntRule) Apply(arg interface{}) error {
 // which will be validated after conversion to int64.
 // Example: 23.12 -> 23
 func FloatInt() *IntRule {
-	return &IntRule{from: floatType}
+	return &IntRule{base: floatType}
 }
 
 // StringInt : Creates an IntRule which expects the arg to be a string.
 // which will be validated after conversion to int64.
 // Example: "23" -> 23, note that "23.34" or any float will throw an error.
 func StringInt() *IntRule {
-	return &IntRule{from: stringType}
+	return &IntRule{base: stringType}
 }
 
 // PureInt : Creates an IntRule which expects the arg to be an int64.
 func PureInt() *IntRule {
-	return &IntRule{from: intType}
+	return &IntRule{base: intType}
 }
 
 // IntRule PRIVATE METHODS ##########################################

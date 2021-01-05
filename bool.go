@@ -5,10 +5,14 @@ type BoolCheck func(arg bool) error
 
 // BoolRule : Rule interface implementation for a bool.
 type BoolRule struct {
-	from   string
+	// base : base is the name of the type from which the bool value will be inferred.
+	base string
+	// whites : the list of whitelisted values for this rule.
 	whites []interface{}
+	// checks : the list of checks to be performed as part of this rule.
 	checks []BoolCheck
-	err    error
+	// err : the error to be thrown if the rule fails.
+	err error
 }
 
 // BoolRule PRIMARY PUBLIC METHODS ##################################
@@ -40,9 +44,9 @@ func (b *BoolRule) Apply(arg interface{}) error {
 	if b.isWhitelisted(arg) {
 		return nil
 	}
-	boolVal, err := toBool(arg, b.from)
+	boolVal, err := toBool(arg, b.base)
 	if err != nil {
-		return orErr(b.err, errBool(b.from))
+		return orErr(b.err, errBool(b.base))
 	}
 
 	if err := b.performChecks(boolVal); err != nil {
@@ -55,7 +59,7 @@ func (b *BoolRule) Apply(arg interface{}) error {
 
 // PureBool : Creates a BoolRule which expects the arg to be a bool.
 func PureBool() *BoolRule {
-	return &BoolRule{from: boolType}
+	return &BoolRule{base: boolType}
 }
 
 // BoolRule PRIVATE METHODS #########################################
