@@ -5,10 +5,14 @@ type FloatCheck func(arg float64) error
 
 // FloatRule : Rule interface implementation for a float64.
 type FloatRule struct {
-	from   string
+	// base : base is the name of the type from which the float value will be inferred.
+	base string
+	// whites : the list of whitelisted values for this rule.
 	whites []interface{}
+	// checks : the list of checks to be performed as part of this rule.
 	checks []FloatCheck
-	err    error
+	// err : the error to be thrown if the rule fails.
+	err error
 }
 
 // FloatRule PRIMARY PUBLIC METHODS #################################
@@ -40,9 +44,9 @@ func (f *FloatRule) Apply(arg interface{}) error {
 	if f.isWhitelisted(arg) {
 		return nil
 	}
-	floatVal, err := toFloat64(arg, f.from)
+	floatVal, err := toFloat64(arg, f.base)
 	if err != nil {
-		return orErr(f.err, errFloat64(f.from))
+		return orErr(f.err, errFloat64(f.base))
 	}
 
 	if err := f.performChecks(floatVal); err != nil {
@@ -57,19 +61,19 @@ func (f *FloatRule) Apply(arg interface{}) error {
 // which will be validated after conversion to float64.
 // Example: 23 -> 23.00
 func IntFloat() *FloatRule {
-	return &FloatRule{from: intType}
+	return &FloatRule{base: intType}
 }
 
 // StringFloat : Creates an FloatRule which expects the arg to be a string.
 // which will be validated after conversion to float64.
 // Example: "23.23" -> 23.23
 func StringFloat() *FloatRule {
-	return &FloatRule{from: stringType}
+	return &FloatRule{base: stringType}
 }
 
 // PureFloat : Creates an FloatRule which expects the arg to be a float64.
 func PureFloat() *FloatRule {
-	return &FloatRule{from: floatType}
+	return &FloatRule{base: floatType}
 }
 
 // FloatRule PRIVATE METHODS ########################################

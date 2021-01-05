@@ -7,10 +7,14 @@ type StringCheck func(arg string) error
 
 // StringRule : Rule interface implementation for a string.
 type StringRule struct {
-	from   string
+	// base : base is the name of the type from which the string value will be inferred.
+	base string
+	// whites : the list of whitelisted values for this rule.
 	whites []interface{}
+	// checks : the list of checks to be performed as part of this rule.
 	checks []StringCheck
-	err    error
+	// err : the error to be thrown if the rule fails.
+	err error
 }
 
 // StringRule PRIMARY PUBLIC METHODS ################################
@@ -42,9 +46,9 @@ func (s *StringRule) Apply(arg interface{}) error {
 	if s.isWhitelisted(arg) {
 		return nil
 	}
-	str, err := toString(arg, s.from)
+	str, err := toString(arg, s.base)
 	if err != nil {
-		return orErr(s.err, errString(s.from))
+		return orErr(s.err, errString(s.base))
 	}
 
 	if err := s.performChecks(str); err != nil {
@@ -59,26 +63,26 @@ func (s *StringRule) Apply(arg interface{}) error {
 // which will be validated after conversion to string.
 // Example: true -> "true"
 func BoolString() *StringRule {
-	return &StringRule{from: boolType}
+	return &StringRule{base: boolType}
 }
 
 // IntString : Creates a StringRule which expects the arg to be an int64.
 // which will be validated after conversion to string.
 // Example: 23 -> "23"
 func IntString() *StringRule {
-	return &StringRule{from: intType}
+	return &StringRule{base: intType}
 }
 
 // FloatString : Creates a StringRule which expects the arg to be a float64.
 // which will be validated after conversion to string.
 // Example: 2.34 -> "2.34"
 func FloatString() *StringRule {
-	return &StringRule{from: floatType}
+	return &StringRule{base: floatType}
 }
 
 // PureString : Creates a StringRule which expects the arg to be a string.
 func PureString() *StringRule {
-	return &StringRule{from: stringType}
+	return &StringRule{base: stringType}
 }
 
 // StringRule PRIVATE METHODS #######################################
