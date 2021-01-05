@@ -1,11 +1,17 @@
 package valkyrie
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
+	errEmpty = errors.New("")
+	errBlind = errors.New("blind validation")
+
 	errBool = func(t string) error { return fmt.Errorf("value should follow: type %s && convertible to bool", t) }
 
-	errInt64     = func(dt string) error { return fmt.Errorf("value should follow: type %s && convertible to int64", dt) }
+	errInt64     = func(t string) error { return fmt.Errorf("value should follow: type %s && convertible to int64", t) }
 	errIntGTE    = func(value int64) error { return fmt.Errorf("value should follow: type int64 && >= %d", value) }
 	errIntLTE    = func(value int64) error { return fmt.Errorf("value should follow: type int64 && <= %d", value) }
 	errIntGT     = func(value int64) error { return fmt.Errorf("value should follow: type int64 && > %d", value) }
@@ -19,7 +25,7 @@ var (
 	errFloatLT     = func(value float64) error { return fmt.Errorf("value should follow: type float64 && < %f", value) }
 	errFloatExcept = func(value float64) error { return fmt.Errorf("value should follow: type float64 && != %f", value) }
 
-	errString        = func(dt string) error { return fmt.Errorf("value should follow: type %s && convertible to string", dt) }
+	errString        = func(t string) error { return fmt.Errorf("value should follow: type %s && convertible to string", t) }
 	errStringLenGTE  = func(value int64) error { return fmt.Errorf("value should follow: type: string && length >= %d", value) }
 	errStringLenLTE  = func(value int64) error { return fmt.Errorf("value should follow: type: string && length <= %d", value) }
 	errStringLenGT   = func(value int64) error { return fmt.Errorf("value should follow: type: string && length > %d", value) }
